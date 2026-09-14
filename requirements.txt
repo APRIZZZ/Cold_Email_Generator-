@@ -1,0 +1,17 @@
+groq>=0.11.0
+#to fetch llm model
+litellm>=1.0.0
+crewai>=0.86.0
+scikit-learn>=1.4.0 
+#for TF IDF retrieval for converting alphabets into numerics and finding cosine similarity
+numpy>=1.26.0 
+#for storing data in numpy list for faster mathematical operations
+requests>=2.31.0
+#fetching web pages, connects https with python
+beautifulsoup4>=4.12.0
+#works as a pair with requests and only scraps out necessary details for the page
+python-dotenv>=1.0.0
+#makes env file useful
+tavily-python>=0.5.0
+#tool for web search
+streamlit>=1.38.0

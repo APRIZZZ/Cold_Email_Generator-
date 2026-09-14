@@ -1,0 +1,29 @@
+[
+  {
+    "company_name": "Acme Cloud Systems",
+    "industry": "Cloud Infrastructure",
+    "services": ["cloud migration", "devops consulting", "kubernetes management"],
+    "trust_score": 8.5,
+    "market_evaluation": "Valued at approximately $2B, consistently ranked as a top-3 cloud consulting partner in the region with strong YoY growth.",
+    "known_email": "partnerships@acmecloud.example.com",
+    "website": "https://acmecloud.example.com"
+  },
+  {
+    "company_name": "Nimbus Data Analytics",
+    "industry": "Data & Analytics",
+    "services": ["data engineering", "business intelligence", "predictive analytics"],
+    "trust_score": 7.8,
+    "market_evaluation": "Fast-growing mid-market analytics firm, recently closed a Series B round, strong client retention.",
+    "known_email": "hello@nimbusdata.example.com",
+    "website": "https://nimbusdata.example.com"
+  },
+  {
+    "company_name": "Quantum Security Labs",
+    "industry": "Cybersecurity",
+    "services": ["penetration testing", "security audits", "incident response"],
+    "trust_score": 8.9,
+    "market_evaluation": "Recognized cybersecurity leader, frequently cited in industry reports, high client trust due to zero major breaches record.",
+    "known_email": "sales@quantumsecurity.example.com",
+    "website": "https://quantumsecurity.example.com"
+  }
+]
