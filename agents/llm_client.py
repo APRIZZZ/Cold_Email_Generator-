@@ -1,6 +1,6 @@
 import warnings
 warnings.filterwarnings("ignore")  # suppress CrewAI's internal Pydantic serialization warnings
-
+import time
 import litellm
 litellm.drop_params = True
 litellm.suppress_debug_info = True  # suppress "response: <Response [200 OK]>" logging
@@ -15,10 +15,7 @@ _llm = LLM(model=f"groq/{GROQ_MODEL}", api_key=GROQ_API_KEY)
 
 
 def complete(system: str, user: str, max_tokens: int = 800, temperature: float = 0.7) -> str:
-    """Single-turn completion helper shared by all agents.
-    Internally, every LLM call is executed as a one-agent, one-task CrewAI
-    Crew, so drafting, revising, and reviewing all run through CrewAI's
-    Agent/Task/Crew orchestration rather than a raw API call."""
+    """Single-turn completion helper shared by all agents."""
     agent = Agent(
         role="AI Email Assistant",
         goal="Follow the given instructions precisely and produce exactly the requested output.",
@@ -34,5 +31,15 @@ def complete(system: str, user: str, max_tokens: int = 800, temperature: float =
     )
 
     crew = Crew(agents=[agent], tasks=[task], process=Process.sequential, verbose=False)
-    result = crew.kickoff()
-    return str(result).strip()
+
+    for attempt in range(3):
+        try:
+            result = crew.kickoff()
+            return str(result).strip()
+        except Exception as e:
+            if "ratelimit" in str(type(e)).lower() or "rate limit" in str(e).lower():
+                if attempt < 2:
+                    time.sleep(15)
+                    continue
+            raise
+    return ""

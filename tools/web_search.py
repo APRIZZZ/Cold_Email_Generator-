@@ -9,6 +9,22 @@ EMAIL_REGEX = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
 
 PREFERRED_PREFIXES = ["sales", "partnerships", "business", "contact", "hello", "info", "bd"]
 
+# Directory / review / listicle sites that show up but aren't actual companies
+EXCLUDED_DOMAINS = [
+    "clutch.co", "g2.com", "capterra.com", "goodfirms.co", "themanifest.com",
+    "trustpilot.com", "glassdoor.com", "indeed.com", "linkedin.com",
+    "medium.com", "reddit.com", "quora.com", "wikipedia.org",
+]
+
+# Title patterns that indicate an article/ranking/listicle rather than a company page
+NOISY_TITLE_PATTERNS = [
+    r"\btop\s+\d+\b", r"\bbest\b", r"\branking", r"\bguide\b", r"\bhow to\b",
+    r"\bvs\.?\b", r"\breview", r"\bcomparison\b", r"\d{4}\s*ranking",
+]
+
+# URL path fragments that indicate a blog post, careers page, or listicle, not a homepage
+NOISY_URL_PATTERNS = ["/blog/", "/careers/", "/jobs/", "/news/", "/rankings", "/press/"]
+
 
 class WebSearchTool:
     def __init__(self):
@@ -24,11 +40,17 @@ class WebSearchTool:
     def search_companies_for_service(self, query: str, max_results: int = 5) -> List[Dict]:
         search_query = f"companies that provide {query}"
         if self.use_tavily:
-            return self._tavily_search(search_query, max_results)
-        return self._duckduckgo_search(search_query, max_results)
+            results = self._tavily_search(search_query, max_results)
+        else:
+            results = self._duckduckgo_search(search_query, max_results)
+        return self._filter_noisy_results(results)
 
     def _tavily_search(self, query: str, max_results: int) -> List[Dict]:
-        response = self._client.search(query=query, max_results=max_results)
+        response = self._client.search(
+            query=query,
+            max_results=max_results,
+            exclude_domains=EXCLUDED_DOMAINS,
+        )
         results = []
         for r in response.get("results", []):
             results.append({
@@ -61,6 +83,24 @@ class WebSearchTool:
             return results
         except requests.RequestException:
             return []
+
+    def _filter_noisy_results(self, results: List[Dict]) -> List[Dict]:
+        """Drop results that look like articles, rankings, or directory pages
+        rather than an actual company's own site."""
+        clean = []
+        for r in results:
+            title = (r.get("name") or "").lower()
+            url = (r.get("url") or "").lower()
+
+            if any(domain in url for domain in EXCLUDED_DOMAINS):
+                continue
+            if any(re.search(pattern, title) for pattern in NOISY_TITLE_PATTERNS):
+                continue
+            if any(fragment in url for fragment in NOISY_URL_PATTERNS):
+                continue
+
+            clean.append(r)
+        return clean
 
     # 2. Find a contact email for a specific company
     def find_company_email(self, company_name: str, website: Optional[str] = None) -> Optional[str]:
